@@ -22,10 +22,11 @@ npm install axios fs https-proxy-agent
 ```
 
 Konfigurasi API Key
-Edit file bot.js dan masukkan API key 2Captcha Anda di bagian ini:
+
 ```
 nano bot.js
 ```
+Edit file bot.js dan masukkan API key 2Captcha Anda di bagian ini:
 const API_KEY = "API_KEY_ANDA";
 
 Tambahkan Wallet
