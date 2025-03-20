@@ -19,7 +19,7 @@ const FAUCET_URL = "https://faucet-api.testnet.initia.xyz/claim";
 const WALLET_FILE = "wallet.txt";
 const PROXY_FILE = "proxy.txt";
 const CLAIMED_FILE = "claimed.txt";
-const LAST_RESET_FILE = "last_reset.txt"; // New file to track last reset time
+const LAST_RESET_FILE = "last_reset.txt";
 
 // Load last reset time
 function getLastResetTime() {
@@ -154,9 +154,8 @@ async function claimFaucet(wallet, proxy, claimedWallets) {
     }
 }
 
-async function startAutoClaim() {
+async function startAutoClaim() { // Fixed 'Ascyn' to 'async'
     let proxies = loadProxies(PROXY_FILE);
- Ascyn
     while (true) {
         resetIfNewDay(); // Check and reset if it's a new day
         let wallets = loadWallets(WALLET_FILE);
