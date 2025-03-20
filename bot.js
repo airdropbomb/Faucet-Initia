@@ -148,7 +148,7 @@ async function claimFaucet(wallet, proxy, claimedWallets) {
         console.log(`✅ Claim successful for ${wallet}`);
         saveClaimedWallet(wallet); // Save to claimed.txt
         console.log("Waiting 30 seconds before the next claim...");
-        await new Promise(resolve => setTimeout(resolve, 30000));
+        await new Promise(resolve => setTimeout(resolve, 60000));
     } catch (error) {
         console.log(`❌ Claim failed for ${wallet}: ${error.message}`);
     }
