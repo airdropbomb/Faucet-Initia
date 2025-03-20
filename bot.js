@@ -18,6 +18,44 @@ const SITEKEY = "0x4AAAAAAA47SsoQAdSW6HIy";
 const FAUCET_URL = "https://faucet-api.testnet.initia.xyz/claim";
 const WALLET_FILE = "wallet.txt";
 const PROXY_FILE = "proxy.txt";
+const CLAIMED_FILE = "claimed.txt";
+const LAST_RESET_FILE = "last_reset.txt"; // New file to track last reset time
+
+// Load last reset time
+function getLastResetTime() {
+    if (fs.existsSync(LAST_RESET_FILE)) {
+        return parseInt(fs.readFileSync(LAST_RESET_FILE, 'utf-8').trim());
+    }
+    return 0;
+}
+
+// Save current time as last reset
+function saveLastResetTime() {
+    fs.writeFileSync(LAST_RESET_FILE, Date.now().toString());
+}
+
+// Check if it's a new day and reset claimed.txt if needed
+function resetIfNewDay() {
+    const lastReset = getLastResetTime();
+    const now = Date.now();
+    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    if (now - lastReset >= oneDayInMs) {
+        console.log("📅 New day detected! Resetting claimed.txt...");
+        fs.writeFileSync(CLAIMED_FILE, ''); // Clear claimed.txt
+        saveLastResetTime(); // Update last reset time
+    }
+}
+
+// Load claimed wallets from claimed.txt
+function loadClaimedWallets(filePath) {
+    return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8').split('\n').map(line => line.trim()).filter(line => line) : [];
+}
+
+// Save a wallet to claimed.txt
+function saveClaimedWallet(wallet) {
+    fs.appendFileSync(CLAIMED_FILE, wallet + '\n');
+}
 
 function loadProxies(filePath) {
     return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8').split('\n').map(line => line.trim()).filter(line => line) : [];
@@ -76,7 +114,12 @@ function loadWallets(filePath) {
     return fs.readFileSync(filePath, 'utf-8').split('\n').map(line => line.trim()).filter(line => line);
 }
 
-async function claimFaucet(wallet, proxy) {
+async function claimFaucet(wallet, proxy, claimedWallets) {
+    if (claimedWallets.includes(wallet)) {
+        console.log(`⏭️ Skipping wallet ${wallet} - already claimed today.`);
+        return;
+    }
+
     console.log(`🔄 Claiming faucet for wallet: ${wallet}`);
     let turnstileToken = await solveCaptcha(proxy);
     if (!turnstileToken) {
@@ -103,24 +146,27 @@ async function claimFaucet(wallet, proxy) {
             httpsAgent: agent
         });
         console.log(`✅ Claim successful for ${wallet}`);
+        saveClaimedWallet(wallet); // Save to claimed.txt
         console.log("Waiting 30 seconds before the next claim...");
         await new Promise(resolve => setTimeout(resolve, 30000));
     } catch (error) {
         console.log(`❌ Claim failed for ${wallet}: ${error.message}`);
-        // No retry; move to the next wallet immediately
     }
 }
 
 async function startAutoClaim() {
     let proxies = loadProxies(PROXY_FILE);
+ Ascyn
     while (true) {
+        resetIfNewDay(); // Check and reset if it's a new day
         let wallets = loadWallets(WALLET_FILE);
+        let claimedWallets = loadClaimedWallets(CLAIMED_FILE);
         for (let wallet of wallets) {
             let proxy = getRandomProxy(proxies);
-            await claimFaucet(wallet, proxy);
+            await claimFaucet(wallet, proxy, claimedWallets);
         }
         console.log("⏳ Waiting 24 hours and 3 minutes before claiming again...");
-        await new Promise(resolve => setTimeout(resolve, (86400 + 180 PackedScene * 1000));
+        await new Promise(resolve => setTimeout(resolve, (86400 + 180) * 1000));
     }
 }
 
