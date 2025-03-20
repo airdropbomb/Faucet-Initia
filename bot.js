@@ -2,7 +2,18 @@ const fs = require('fs');
 const axios = require('axios');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
-const API_KEY = "API_KEY_ANDA";
+// Banner
+console.log(`
+       █████╗ ██████╗ ██████╗     ███╗   ██╗ ██████╗ ██████╗ ███████╗
+      ██╔══██╗██╔══██╗██╔══██╗    ████╗  ██║██╔═══██╗██╔══██╗██╔════╝
+      ███████║██║  ██║██████╔╝    ██╔██╗ ██║██║   ██║██║  ██║█████╗  
+      ██╔══██║██║  ██║██╔══██╗    ██║╚██╗██║██║   ██║██║  ██║██╔══╝  
+      ██║  ██║██████╔╝██████╔╝    ██║ ╚████║╚██████╔╝██████╔╝███████╗
+      ╚═╝  ╚═╝╚═════╝ ╚═════╝     ╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝  
+        By : ADB NODE
+`);
+
+const API_KEY = "YOUR_API_KEY";
 const SITEKEY = "0x4AAAAAAA47SsoQAdSW6HIy";
 const FAUCET_URL = "https://faucet-api.testnet.initia.xyz/claim";
 const WALLET_FILE = "wallet.txt";
@@ -17,7 +28,7 @@ function getRandomProxy(proxies) {
 }
 
 async function solveCaptcha(proxy) {
-    console.log("⏳ Menunggu CAPTCHA diselesaikan...");
+    console.log("⏳ Waiting for CAPTCHA to be solved...");
     try {
         let agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
         let response = await axios.post("http://2captcha.com/in.php", null, {
@@ -32,7 +43,7 @@ async function solveCaptcha(proxy) {
         });
 
         if (response.data.status !== 1) {
-            console.log("❌ Gagal mendapatkan ID CAPTCHA!");
+            console.log("❌ Failed to get CAPTCHA ID!");
             return null;
         }
 
@@ -50,14 +61,14 @@ async function solveCaptcha(proxy) {
                 httpsAgent: agent
             });
             if (result.data.status === 1) {
-                console.log("✅ CAPTCHA berhasil diselesaikan!");
+                console.log("✅ CAPTCHA successfully solved!");
                 return result.data.request;
             }
         }
     } catch (error) {
-        console.error("⚠️ Error saat menyelesaikan CAPTCHA:", error.message);
+        console.error("⚠️ Error while solving CAPTCHA:", error.message);
     }
-    console.log("❌ Gagal mendapatkan solusi CAPTCHA dalam batas waktu!");
+    console.log("❌ Failed to get CAPTCHA solution within time limit!");
     return null;
 }
 
@@ -66,10 +77,10 @@ function loadWallets(filePath) {
 }
 
 async function claimFaucet(wallet, proxy) {
-    console.log(`🔄 Menklaim faucet untuk wallet: ${wallet}`);
+    console.log(`🔄 Claiming faucet for wallet: ${wallet}`);
     let turnstileToken = await solveCaptcha(proxy);
     if (!turnstileToken) {
-        console.log("❌ Melewati wallet karena gagal mendapatkan token CAPTCHA.");
+        console.log("❌ Skipping wallet due to failure to obtain CAPTCHA token.");
         return;
     }
 
@@ -80,7 +91,7 @@ async function claimFaucet(wallet, proxy) {
     
     let agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
 
-    for (let i = 0; i < 3; i++) {  // Coba klaim maksimal 3 kali
+    for (let i = 0; i < 3; i++) {  // Try claiming up to 3 times
         try {
             let response = await axios.post(FAUCET_URL, data, {
                 headers: {
@@ -88,17 +99,17 @@ async function claimFaucet(wallet, proxy) {
                     "content-type": "application/json",
                     "origin": "https://app.testnet.initia.xyz",
                     "referer": "https://app.testnet.initia.xyz/",
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, seperti Gecko) Chrome/134.0.0.0 Safari/537.36"
+                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
                 },
                 httpsAgent: agent
             });
-            console.log(`✅ Klaim berhasil untuk ${wallet}`);
-            console.log("Menunggu 30 detik sebelum klaim berikutnya...");
+            console.log(`✅ Claim successful for ${wallet}`);
+            console.log("Waiting 30 seconds before the next claim...");
             await new Promise(resolve => setTimeout(resolve, 30000));
             return;
         } catch (error) {
-            console.log(`❌ Klaim gagal (Percobaan ${i + 1}) untuk ${wallet}`);
-            console.log("⏳ Menunggu 30 detik sebelum mencoba lagi...");
+            console.log(`❌ Claim failed (Attempt ${i + 1}) for ${wallet}`);
+            console.log("⏳ Waiting 30 seconds before trying again...");
             await new Promise(resolve => setTimeout(resolve, 30000));
         }
     }
@@ -112,7 +123,7 @@ async function startAutoClaim() {
             let proxy = getRandomProxy(proxies);
             await claimFaucet(wallet, proxy);
         }
-        console.log("⏳ Menunggu 24 jam 3 menit sebelum klaim ulang...");
+        console.log("⏳ Waiting 24 hours and 3 minutes before claiming again...");
         await new Promise(resolve => setTimeout(resolve, (86400 + 180) * 1000));
     }
 }
