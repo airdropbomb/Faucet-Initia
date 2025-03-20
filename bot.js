@@ -91,27 +91,23 @@ async function claimFaucet(wallet, proxy) {
     
     let agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
 
-    for (let i = 0; i < 3; i++) {  // Try claiming up to 3 times
-        try {
-            let response = await axios.post(FAUCET_URL, data, {
-                headers: {
-                    "accept": "application/json, text/plain, */*",
-                    "content-type": "application/json",
-                    "origin": "https://app.testnet.initia.xyz",
-                    "referer": "https://app.testnet.initia.xyz/",
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
-                },
-                httpsAgent: agent
-            });
-            console.log(`✅ Claim successful for ${wallet}`);
-            console.log("Waiting 30 seconds before the next claim...");
-            await new Promise(resolve => setTimeout(resolve, 30000));
-            return;
-        } catch (error) {
-            console.log(`❌ Claim failed (Attempt ${i + 1}) for ${wallet}`);
-            console.log("⏳ Waiting 30 seconds before trying again...");
-            await new Promise(resolve => setTimeout(resolve, 30000));
-        }
+    try {
+        let response = await axios.post(FAUCET_URL, data, {
+            headers: {
+                "accept": "application/json, text/plain, */*",
+                "content-type": "application/json",
+                "origin": "https://app.testnet.initia.xyz",
+                "referer": "https://app.testnet.initia.xyz/",
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+            },
+            httpsAgent: agent
+        });
+        console.log(`✅ Claim successful for ${wallet}`);
+        console.log("Waiting 30 seconds before the next claim...");
+        await new Promise(resolve => setTimeout(resolve, 30000));
+    } catch (error) {
+        console.log(`❌ Claim failed for ${wallet}: ${error.message}`);
+        // No retry; move to the next wallet immediately
     }
 }
 
@@ -124,7 +120,7 @@ async function startAutoClaim() {
             await claimFaucet(wallet, proxy);
         }
         console.log("⏳ Waiting 24 hours and 3 minutes before claiming again...");
-        await new Promise(resolve => setTimeout(resolve, (86400 + 180) * 1000));
+        await new Promise(resolve => setTimeout(resolve, (86400 + 180 PackedScene * 1000));
     }
 }
 
