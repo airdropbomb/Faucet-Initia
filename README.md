@@ -1,52 +1,83 @@
 Faucet Initia Auto Claim Bot
-Skrip ini secara otomatis mengklaim faucet untuk wallet di jaringan testnet Initia menggunakan solusi CAPTCHA dari 2Captcha.
+This script automatically claims faucets for wallets on the Initia testnet using CAPTCHA solutions from 2Captcha.
 
 
-🛠 Persyaratan
-Node.js (Disarankan versi terbaru)
-Akun 2Captcha (untuk API key)
-Wallet testnet Initia
+ Requirements
+Node.js: Recommended to use the latest version.
+
+2Captcha Account: Required for obtaining an API key.
+
+Initia Testnet Wallet: One or more wallet addresses for claiming.
 
 
-📥 Instalasi
+📥 Installation
 
-Clone repository ini:
+Clone the Repository
 ```
-git clone https://github.com/kontia1/Faucet-Initia.git
+git clone https://github.com/airdropbomb/Faucet-Initia.git
 cd Faucet-Initia
 ```
 
-Instal dependensi:
+Install Dependencies
+
 ```
 npm install axios fs https-proxy-agent
 ```
 
-Konfigurasi API Key
+Configure API Key
 
 ```
 nano bot.js
 ```
-Edit file bot.js dan masukkan API key 2Captcha Anda di bagian ini:
+Locate the following line and replace "YOUR_API_KEY" with your 2Captcha API key:
 
-const API_KEY = "API_KEY_ANDA";
+const API_KEY = "YOUR_API_KEY";
 
-Tambahkan Wallet
+Save and exit the file.
+
+
+Add Wallet Addresses
+
 ```
 nano wallet.txt
 ```
-Buat atau edit file wallet.txt dan masukkan satu atau lebih alamat wallet Initia (satu per baris).
+Add one or more Initia testnet wallet addresses (one per line), for example:
 
-▶️ Menjalankan Skrip
-Jalankan perintah berikut untuk memulai bot:
+init1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+init1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
+Save and exit the file.
+
+
+▶️ Running the Script
+
+Start the bot with the following command:
+
 ```
 node bot.js
 ```
 
-Bot akan terus berjalan dan mengklaim faucet untuk semua wallet yang ada di wallet.txt.
+The bot will:
+Automatically solve CAPTCHAs using 2Captcha.
 
-Tambahan Optional
+Claim faucets for all wallets listed in wallet.txt.
+
+Run continuously, pausing 24 hours and 3 minutes between claim cycles.
+
+
+Optional: Using Proxies
+If you want to use proxies for anonymity or rate limiting:
+
+Create or edit the proxy.txt file:
+
 ```
 nano proxy.txt
 ```
+Add proxy addresses (one per line), for example:
 
-jika ingin menambahkan proxy
+http://username:password@proxy1.example.com:port
+http://username:password@proxy2.example.com:port
+
+Save and exit. The script will randomly select a proxy from this list for each claim attempt.
+
+
