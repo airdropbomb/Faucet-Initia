@@ -13,6 +13,11 @@ console.log(`
         By : ADB NODE
 `);
 
+// Function to get current date and time
+const getTimestamp = () => {
+    return new Date().toLocaleString('en-US', { timeZone: 'UTC' });
+};
+
 const API_KEY = "YOUR_API_KEY"; // ဒီနေရာမှာ သင့် 2Captcha API key ထည့်ပါ
 const SITEKEY = "0x4AAAAAAA47SsoQAdSW6HIy";
 const FAUCET_URL = "https://faucet-api.testnet.initia.xyz/claim";
@@ -28,7 +33,7 @@ function getRandomProxy(proxies) {
 }
 
 async function solveCaptcha(proxy) {
-    console.log("⏳ Waiting for CAPTCHA to be solved...");
+    console.log(`[${getTimestamp()}] ⏳ Waiting for CAPTCHA to be solved...`);
     try {
         let agent = proxy ? new HttpsProxyAgent(proxy) : undefined;
         let response = await axios.post("http://2captcha.com/in.php", null, {
@@ -43,7 +48,7 @@ async function solveCaptcha(proxy) {
         });
 
         if (response.data.status !== 1) {
-            console.log("❌ Failed to get CAPTCHA ID!");
+            console.log(`[${getTimestamp()}] ❌ Failed to get CAPTCHA ID!`);
             return null;
         }
 
@@ -61,14 +66,14 @@ async function solveCaptcha(proxy) {
                 httpsAgent: agent
             });
             if (result.data.status === 1) {
-                console.log("✅ CAPTCHA successfully solved!");
+                console.log(`[${getTimestamp()}] ✅ CAPTCHA successfully solved!`);
                 return result.data.request;
             }
         }
     } catch (error) {
-        console.error("⚠️ Error while solving CAPTCHA:", error.message);
+        console.error(`[${getTimestamp()}] ⚠️ Error while solving CAPTCHA: ${error.message}`);
     }
-    console.log("❌ Failed to get CAPTCHA solution within time limit!");
+    console.log(`[${getTimestamp()}] ❌ Failed to get CAPTCHA solution within time limit!`);
     return null;
 }
 
@@ -77,11 +82,11 @@ function loadWallets(filePath) {
 }
 
 async function claimFaucet(wallet, proxy) {
-    console.log(`🔄 Claiming faucet for wallet: ${wallet}`);
+    console.log(`[${getTimestamp()}] 🔄 Claiming faucet for wallet: ${wallet}`);
     let turnstileToken = await solveCaptcha(proxy);
     if (!turnstileToken) {
-        console.log("❌ Skipping wallet due to failure to obtain CAPTCHA token.");
-        console.log("⏳ Waiting 60 seconds before the next claim...");
+        console.log(`[${getTimestamp()}] ❌ Skipping wallet due to failure to obtain CAPTCHA token.`);
+        console.log(`[${getTimestamp()}] ⏳ Waiting 60 seconds before the next claim...`);
         await new Promise(resolve => setTimeout(resolve, 60000)); // 60 စက္ကန့် delay
         return;
     }
@@ -105,22 +110,22 @@ async function claimFaucet(wallet, proxy) {
                 },
                 httpsAgent: agent
             });
-            console.log(`✅ Claim successful for ${wallet}`);
-            console.log("⏳ Waiting 60 seconds before the next claim...");
+            console.log(`[${getTimestamp()}] ✅ Claim successful for ${wallet}`);
+            console.log(`[${getTimestamp()}] ⏳ Waiting 60 seconds before the next claim...`);
             await new Promise(resolve => setTimeout(resolve, 60000)); // 60 စက္ကန့် delay
             return;
         } catch (error) {
-            console.log(`❌ Claim failed (Attempt ${i + 1}) for ${wallet}: ${error.message}`);
+            console.log(`[${getTimestamp()}] ❌ Claim failed (Attempt ${i + 1}) for ${wallet}: ${error.message}`);
             if (i < 2) { // Retry မကုန်သေးရင် 30 စက္ကန့် စောင့်ပြီး ထပ်ကြိုးစား
-                console.log("⏳ Waiting 30 seconds before trying again...");
+                console.log(`[${getTimestamp()}] ⏳ Waiting 30 seconds before trying again...`);
                 await new Promise(resolve => setTimeout(resolve, 30000));
             }
         }
     }
 
     // Retry 3 ကြိမ်လုံး မအောင်မြင်ရင် ဒီနေရာကို ရောက်လာမယ်
-    console.log(`❌ All attempts failed for ${wallet}`);
-    console.log("⏳ Waiting 60 seconds before the next claim...");
+    console.log(`[${getTimestamp()}] ❌ All attempts failed for ${wallet}`);
+    console.log(`[${getTimestamp()}] ⏳ Waiting 60 seconds before the next claim...`);
     await new Promise(resolve => setTimeout(resolve, 60000)); // 60 စက္ကန့် delay
 }
 
@@ -132,8 +137,8 @@ async function startAutoClaim() {
             let proxy = getRandomProxy(proxies);
             await claimFaucet(wallet, proxy);
         }
-        console.log("⏳ Waiting 24 hours and 3 minutes before claiming again...");
-        await new Promise(resolve => setTimeout(resolve, (86400 + 180) * 1000)); // 24 နာရီ + 3 မိနစ်
+        console.log(`[${getTimestamp()}] ⏳ Waiting 8 hours before claiming again...`);
+        await new Promise(resolve => setTimeout(resolve, (28800 + 60) * 1000)); // 8 နာရီ + 1 မိနစ်
     }
 }
 
